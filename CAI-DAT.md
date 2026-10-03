@@ -459,20 +459,6 @@ Dòng có `result_status` là Judge0 đã trả lời. Dòng có `error=` là CT
 
 Đừng thêm flag cho challenge loại này. Flag không tham gia vào đường chấm.
 
-## Phần 11. Bảng tra lỗi lúc cài
-
-| Triệu chứng | Nguyên nhân | Việc làm |
-|---|---|---|
-| Không có type Code Challenge | Plugin chưa load | `docker compose logs ctfd` tìm `ctfd_code`. Restart sau khi sửa |
-| Save URL nhưng trang thành `?ctfd_code_url=` | Form gửi GET | Ctrl+F5, Save lại, phải thấy chữ Saved |
-| Run báo chưa cấu hình URL | Cả ba chỗ đặt URL đều trống | Làm phần 5 |
-| Connection refused | URL là localhost, hoặc Judge0 chưa publish 2358 | Dùng IP host. `docker ps` phải có `0.0.0.0:2358->2358/tcp` |
-| Internal Error, log nói timed out | Không có worker, hoặc worker chết | `docker ps` phải có container workers. `docker compose up -d` trong thư mục Judge0 |
-| 401 từ Judge0 | Judge0 bật auth | Điền token ở Admin → Judge0, hoặc để `AUTHN_TOKEN` trống |
-| 403 từ CTFd | Chưa đăng nhập, CTF pause, hoặc teams mode mà chưa có team | Đăng nhập bằng user có quyền chơi |
-| Mở bài thì 500 | Bảng plugin chưa tạo | Xem log lúc start. Restart. Không insert tay vào bảng `challenges` |
-| Editor không hiện, chỉ còn ô chữ | Trình duyệt giữ file cũ, hoặc thiếu CodeMirror local | Ctrl+F5. Ô chữ vẫn nộp bài được |
-
 ## Tóm tắt thứ tự làm một lần
 
 1. Cài Docker.

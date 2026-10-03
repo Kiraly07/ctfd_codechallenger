@@ -32,7 +32,6 @@
 - [Quick Start / Hướng dẫn nhanh](#quick-start--hướng-dẫn-nhanh)
 - [Configuration / Cấu hình chi tiết](#configuration--cấu-hình-chi-tiết)
 - [API Reference / Tài liệu API](#api-reference--tài-liệu-api)
-- [Troubleshooting / Sửa lỗi](#troubleshooting--sửa-lỗi)
 - [Security Notes / Ghi chú bảo mật](#security-notes--ghi-chú-bảo-mật)
 - [Documentation / Tài liệu](#documentation--tài-liệu)
 - [License / Giấy phép](#license--giấy-phép)
@@ -335,31 +334,6 @@ Response:
 ```
 
 Hidden cases have no `stdin`, `expected_output`, `stdout`, or `stderr`.
-
----
-
-## Troubleshooting / Sửa lỗi
-
-> **Chi tiết**: Xem [HUONG-DAN.md Mục 6](HUONG-DAN.md#6-sửa-lỗi) và [CAI-DAT.md Phần 11](CAI-DAT.md#phần-11-bảng-tra-lỗi-lúc-cài) — Hướng dẫn sửa lỗi chi tiết tiếng Việt
-
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| No "Code Challenge" type | Plugin not loaded | `docker compose logs ctfd \| grep -i ctfd_code`. Restart after fix |
-| Save URL but page becomes `?ctfd_code_url=` | Form sent GET | Ctrl+F5, Save again, must see **Saved.** |
-| Run/Submit 400 "Judge0 URL is not configured" | All three URL sources empty | Configure URL (see Installation → step 4) |
-| Connection refused | URL is `localhost` or `127.0.0.1` | Use host IP. `docker ps` must show `0.0.0.0:2358->2358/tcp` |
-| Timeout, Internal Error | Judge0 worker not running | `docker ps` must show `workers` container Up |
-| First Run is Time Limit Exceeded, stdout is already correct, retry is Accepted in well under the CPU limit | Worker was cold (first job after idle) | Run again. Not a wrong answer |
-| 401/403 from Judge0 | Judge0 auth enabled, no token | Set token in Admin → Judge0 or `JUDGE0_API_TOKEN` |
-| 403 from CTFd | Not logged in, CTF paused, or no team | Login with valid user |
-| CORS error in console | Other page calling Judge0 directly | Ignore if Run/Submit on CTFd works |
-| Runtime Error (NZEC) with Python | IndentationError or SyntaxError | Check code, retype from column 0 |
-| Wrong Answer but output looks correct | Extra spaces, missing newline | `trim` only strips trailing whitespace per line |
-| Accepted on Run but Wrong Answer on Submit | Hidden test differs from sample | Fix for full problem, not just sample |
-| "Too many runs" / "Too many submissions" | Rate limit hit | Wait ~1 minute |
-| Editor not showing, only textarea | Browser cache or missing CodeMirror | Ctrl+F5. Textarea still works |
-| Plugin code changes not visible | Python cached | `docker compose restart ctfd` |
-| Tables missing or 500 on challenge | Migration not run | Check startup log, restart. Don't insert into `challenges` manually |
 
 ---
 
