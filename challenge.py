@@ -1,6 +1,6 @@
 """Judge0 challenge type.
 
-Registered as CHALLENGE_CLASSES['judge0']. CTFd calls create/read/update/
+Registered as CHALLENGE_CLASSES['ctfd_code']. CTFd calls create/read/update/
 delete for admin CRUD and attempt/solve/fail when a player submits through
 POST /api/v1/challenges/attempt.
 
@@ -58,7 +58,7 @@ from .service import (
     sanitize_url,
 )
 
-log = logging.getLogger("ctfd.plugins.judge0")
+log = logging.getLogger("ctfd.plugins.ctfd_code")
 
 # Columns that belong on the parent Challenges row. Anything else in the
 # admin JSON is either a Judge0 column or ignored.
@@ -82,7 +82,7 @@ _PARENT_FIELDS = {
 }
 
 _JUDGE0_FIELDS = {
-    "judge0_url",
+    "ctfd_code_url",
     "cpu_time_limit",
     "memory_limit",
     "allowed_languages",
@@ -111,7 +111,7 @@ def _clean_create_payload(data: dict) -> dict:
             raise ChallengeCreateException(
                 "Invalid 'scheduled_at' — expected ISO 8601 datetime"
             )
-    cleaned["type"] = "judge0"
+    cleaned["type"] = "ctfd_code"
     # Static scoring. Dynamic decay columns stay unused.
     cleaned.setdefault("function", "static")
     cleaned.setdefault("state", "hidden")
@@ -119,9 +119,9 @@ def _clean_create_payload(data: dict) -> dict:
 
 
 def _apply_judge0_fields(challenge: Judge0Challenge, data: dict) -> None:
-    if "judge0_url" in data:
+    if "ctfd_code_url" in data:
         try:
-            challenge.judge0_url = sanitize_url(data.get("judge0_url"))
+            challenge.ctfd_code_url = sanitize_url(data.get("ctfd_code_url"))
         except ValidationError as exc:
             raise ChallengeUpdateException(str(exc)) from exc
 
@@ -158,21 +158,21 @@ def _apply_judge0_fields(challenge: Judge0Challenge, data: dict) -> None:
 
 
 class Judge0CodeChallenge(BaseChallenge):
-    id = "judge0"
-    name = "Judge0 Code Challenge"
+    id = "ctfd_code"
+    name = "Code Challenge"
     templates = {
-        "create": "/plugins/judge0/assets/create.html",
-        "update": "/plugins/judge0/assets/update.html",
-        "view": "/plugins/judge0/assets/view.html",
+        "create": "/plugins/ctfd_code/assets/create.html",
+        "update": "/plugins/ctfd_code/assets/update.html",
+        "view": "/plugins/ctfd_code/assets/view.html",
     }
     scripts = {
-        "create": "/plugins/judge0/assets/create.js",
-        "update": "/plugins/judge0/assets/update.js",
-        "view": "/plugins/judge0/assets/view.js",
+        "create": "/plugins/ctfd_code/assets/create.js",
+        "update": "/plugins/ctfd_code/assets/update.js",
+        "view": "/plugins/ctfd_code/assets/view.js",
     }
-    route = "/plugins/judge0/assets/"
+    route = "/plugins/ctfd_code/assets/"
     blueprint = Blueprint(
-        "judge0_challenge",
+        "ctfd_code_challenge",
         __name__,
         template_folder="assets",
         static_folder="assets",
@@ -204,7 +204,7 @@ class Judge0CodeChallenge(BaseChallenge):
             challenge.comparison_mode = DEFAULT_COMPARISON
             challenge.cpu_time_limit = DEFAULT_CPU_TIME
             challenge.memory_limit = DEFAULT_MEMORY_KB
-            challenge.judge0_url = ""
+            challenge.ctfd_code_url = ""
         db.session.commit()
         return challenge
 
@@ -214,7 +214,7 @@ class Judge0CodeChallenge(BaseChallenge):
         data = super().read(challenge)
         data.update(
             {
-                "judge0_url": challenge.judge0_url or "",
+                "ctfd_code_url": challenge.ctfd_code_url or "",
                 "cpu_time_limit": challenge.cpu_time_limit,
                 "memory_limit": challenge.memory_limit,
                 "allowed_languages": challenge.allowed_languages or [],
@@ -302,7 +302,7 @@ class Judge0CodeChallenge(BaseChallenge):
     def attempt(cls, challenge, request):
         """Grade a submission that arrived through CTFd's attempt endpoint.
 
-        The player UI posts to /plugins/judge0/submit instead, because the
+        The player UI posts to /plugins/ctfd_code/submit instead, because the
         core endpoint stores the raw submission string and expects a flag.
         This method still grades source_code when it is present so admin
         preview and API clients behave the same way.
@@ -319,7 +319,7 @@ class Judge0CodeChallenge(BaseChallenge):
         except ValidationError as exc:
             return False, exc.message
         except Exception:
-            log.exception("[JUDGE0] attempt failed challenge_id=%s", challenge.id)
+            log.exception("[CTFD_CODE] attempt failed challenge_id=%s", challenge.id)
             return False, "Judge0 could not grade this submission"
 
         if result["success"]:
@@ -333,7 +333,7 @@ class Judge0CodeChallenge(BaseChallenge):
         data = request.get_json(silent=True) or request.form or {}
         # Never store the source. A short marker is enough for the solves table.
         language = data.get("language") or ""
-        provided = "judge0:{0}".format(language)[:128]
+        provided = "ctfd_code:{0}".format(language)[:128]
         solve = Solves(
             user_id=user.id,
             team_id=team.id if team else None,
@@ -354,7 +354,7 @@ class Judge0CodeChallenge(BaseChallenge):
     def fail(cls, user, team, challenge, request):
         data = request.get_json(silent=True) or request.form or {}
         language = data.get("language") or ""
-        provided = "judge0:{0}".format(language)[:128]
+        provided = "ctfd_code:{0}".format(language)[:128]
         wrong = Fails(
             user_id=user.id,
             team_id=team.id if team else None,

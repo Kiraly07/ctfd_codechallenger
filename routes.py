@@ -1,14 +1,14 @@
 """HTTP routes for the Judge0 plugin.
 
 Player:
-    GET  /plugins/judge0/<challenge_id>/config
-    POST /plugins/judge0/run/<challenge_id>
-    POST /plugins/judge0/submit/<challenge_id>
+    GET  /plugins/ctfd_code/<challenge_id>/config
+    POST /plugins/ctfd_code/run/<challenge_id>
+    POST /plugins/ctfd_code/submit/<challenge_id>
 
 Admin:
-    GET/POST        /plugins/judge0/admin/<challenge_id>/tests
-    PATCH/DELETE    /plugins/judge0/admin/tests/<test_id>
-    GET/POST        /plugins/judge0/admin/settings
+    GET/POST        /plugins/ctfd_code/admin/<challenge_id>/tests
+    PATCH/DELETE    /plugins/ctfd_code/admin/tests/<test_id>
+    GET/POST        /plugins/ctfd_code/admin/settings
 
 CSRF is the normal CTFd check: JSON requests must send CSRF-Token, which
 CTFd.fetch already does. These routes do not bypass it.
@@ -39,15 +39,15 @@ from .service import (
     grade_all,
     parse_source,
     public_challenge_config,
-    resolve_judge0_url,
+    resolve_ctfd_code_url,
     run_samples,
     sanitize_url,
     testcase_count_ok,
 )
 
-log = logging.getLogger("ctfd.plugins.judge0")
+log = logging.getLogger("ctfd.plugins.ctfd_code")
 
-judge0_bp = Blueprint("judge0", __name__)
+ctfd_code_bp = Blueprint("ctfd_code", __name__)
 
 
 def _load_player_challenge(challenge_id: int) -> Judge0Challenge:
@@ -108,7 +108,7 @@ def _case_payload(data: dict) -> dict:
     }
 
 
-@judge0_bp.route("/plugins/judge0/<int:challenge_id>/config", methods=["GET"])
+@ctfd_code_bp.route("/plugins/ctfd_code/<int:challenge_id>/config", methods=["GET"])
 @authed_only
 def player_config(challenge_id):
     challenge = _load_player_challenge(challenge_id)
@@ -129,7 +129,7 @@ def _competition_open() -> bool:
     return bool(ctftime())
 
 
-@judge0_bp.route("/plugins/judge0/run/<int:challenge_id>", methods=["POST"])
+@ctfd_code_bp.route("/plugins/ctfd_code/run/<int:challenge_id>", methods=["POST"])
 @authed_only
 def run_code(challenge_id):
     """Run sample tests only. Does not solve, fail, or award points."""
@@ -147,7 +147,7 @@ def run_code(challenge_id):
     except ValidationError as exc:
         return _error(exc.message, 400)
     except Judge0Error as exc:
-        log.warning("[JUDGE0] run challenge_id=%s error=%s", challenge.id, exc)
+        log.warning("[CTFD_CODE] run challenge_id=%s error=%s", challenge.id, exc)
         return _error("Judge0 could not run this code. Check the server URL.", 502)
 
     # A single-sample challenge gets the flat shape the spec shows, plus the
@@ -168,7 +168,7 @@ def run_code(challenge_id):
     }
 
 
-@judge0_bp.route("/plugins/judge0/submit/<int:challenge_id>", methods=["POST"])
+@ctfd_code_bp.route("/plugins/ctfd_code/submit/<int:challenge_id>", methods=["POST"])
 @authed_only
 def submit_code(challenge_id):
     """Grade every test case. A full pass records a CTFd solve."""
@@ -191,7 +191,7 @@ def submit_code(challenge_id):
     except ValidationError as exc:
         return _error(exc.message, 400)
     except Judge0Error as exc:
-        log.warning("[JUDGE0] submit challenge_id=%s error=%s", challenge.id, exc)
+        log.warning("[CTFD_CODE] submit challenge_id=%s error=%s", challenge.id, exc)
         return _error("Judge0 could not grade this submission.", 502)
 
     # Attach language so solve()/fail() can store a short marker, not the source.
@@ -209,7 +209,7 @@ def submit_code(challenge_id):
             except ChallengeSolveException:
                 pass
             except Exception:
-                log.exception("[JUDGE0] solve failed challenge_id=%s", challenge.id)
+                log.exception("[CTFD_CODE] solve failed challenge_id=%s", challenge.id)
                 return _error("The solution passed but could not be recorded.", 500)
             clear_standings()
             clear_challenges()
@@ -238,7 +238,7 @@ def submit_code(challenge_id):
     }
 
 
-@judge0_bp.route("/plugins/judge0/admin/<int:challenge_id>/tests", methods=["GET"])
+@ctfd_code_bp.route("/plugins/ctfd_code/admin/<int:challenge_id>/tests", methods=["GET"])
 @admins_only
 def list_tests(challenge_id):
     challenge = Judge0Challenge.query.filter_by(id=challenge_id).first_or_404()
@@ -248,7 +248,7 @@ def list_tests(challenge_id):
     }
 
 
-@judge0_bp.route("/plugins/judge0/admin/<int:challenge_id>/tests", methods=["POST"])
+@ctfd_code_bp.route("/plugins/ctfd_code/admin/<int:challenge_id>/tests", methods=["POST"])
 @admins_only
 def create_test(challenge_id):
     challenge = Judge0Challenge.query.filter_by(id=challenge_id).first_or_404()
@@ -269,7 +269,7 @@ def create_test(challenge_id):
     return {"success": True, "data": {"id": case.id, "position": case.position}}
 
 
-@judge0_bp.route("/plugins/judge0/admin/tests/<int:test_id>", methods=["PATCH"])
+@ctfd_code_bp.route("/plugins/ctfd_code/admin/tests/<int:test_id>", methods=["PATCH"])
 @admins_only
 def update_test(test_id):
     case = Judge0TestCase.query.filter_by(id=test_id).first_or_404()
@@ -299,7 +299,7 @@ def update_test(test_id):
     return {"success": True}
 
 
-@judge0_bp.route("/plugins/judge0/admin/tests/<int:test_id>", methods=["DELETE"])
+@ctfd_code_bp.route("/plugins/ctfd_code/admin/tests/<int:test_id>", methods=["DELETE"])
 @admins_only
 def delete_test(test_id):
     case = Judge0TestCase.query.filter_by(id=test_id).first_or_404()
@@ -308,15 +308,15 @@ def delete_test(test_id):
     return {"success": True}
 
 
-@judge0_bp.route("/plugins/judge0/admin/settings", methods=["GET"])
+@ctfd_code_bp.route("/plugins/ctfd_code/admin/settings", methods=["GET"])
 @admins_only
 def settings_page():
-    # HTML for the nav item. The JSON API lives at /plugins/judge0/admin/settings.json
+    # HTML for the nav item. The JSON API lives at /plugins/ctfd_code/admin/settings.json
     # so this path can be a normal admin page.
-    return render_template("plugins/judge0/assets/admin_settings.html")
+    return render_template("plugins/ctfd_code/assets/admin_settings.html")
 
 
-@judge0_bp.route("/plugins/judge0/admin/settings.json", methods=["GET"])
+@ctfd_code_bp.route("/plugins/ctfd_code/admin/settings.json", methods=["GET"])
 @admins_only
 def get_settings():
     # The token is write-only. The response says whether one is set, not the value.
@@ -324,24 +324,24 @@ def get_settings():
     return {
         "success": True,
         "data": {
-            "judge0_url": get_config(CONFIG_URL_KEY) or "",
+            "ctfd_code_url": get_config(CONFIG_URL_KEY) or "",
             "token_set": bool(token),
             "languages": [
                 {"slug": slug, "id": meta[0], "label": meta[1]}
                 for slug, meta in LANGUAGES.items()
             ],
-            "effective_url": resolve_judge0_url(None),
+            "effective_url": resolve_ctfd_code_url(None),
             "max_test_cases": MAX_TEST_CASES,
         },
     }
 
 
-@judge0_bp.route("/plugins/judge0/admin/settings", methods=["POST"])
+@ctfd_code_bp.route("/plugins/ctfd_code/admin/settings", methods=["POST"])
 @admins_only
 def save_settings():
     data = _json_body()
     try:
-        url = sanitize_url(data.get("judge0_url", ""))
+        url = sanitize_url(data.get("ctfd_code_url", ""))
     except ValidationError as exc:
         return _error(exc.message, 400)
     set_config(CONFIG_URL_KEY, url)

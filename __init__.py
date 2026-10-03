@@ -14,18 +14,18 @@ from CTFd.plugins.challenges import CHALLENGE_CLASSES
 from CTFd.plugins.migrations import upgrade
 
 from .challenge import Judge0CodeChallenge
-from .routes import judge0_bp
+from .routes import ctfd_code_bp
 
-log = logging.getLogger("ctfd.plugins.judge0")
+log = logging.getLogger("ctfd.plugins.ctfd_code")
 
 
 def load(app):
-    upgrade(plugin_name="judge0")
+    upgrade(plugin_name="ctfd_code")
     # Tables come from migrations/. create_all() is only the sqlite fallback
     # inside upgrade(); calling it again here would fight MariaDB.
 
-    CHALLENGE_CLASSES["judge0"] = Judge0CodeChallenge
-    register_plugin_assets_directory(app, base_path="/plugins/judge0/assets/")
-    app.register_blueprint(judge0_bp)
-    register_admin_plugin_menu_bar(title="Judge0", route="/plugins/judge0/admin/settings")
-    log.info("[JUDGE0] plugin loaded")
+    CHALLENGE_CLASSES["ctfd_code"] = Judge0CodeChallenge
+    register_plugin_assets_directory(app, base_path="/plugins/ctfd_code/assets/")
+    app.register_blueprint(ctfd_code_bp)
+    register_admin_plugin_menu_bar(title="Code", route="/plugins/ctfd_code/admin/settings")
+    log.info("[CTFD_CODE] plugin loaded")

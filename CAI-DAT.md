@@ -13,7 +13,7 @@ Người chơi (trình duyệt)
         |
         |  chỉ nói chuyện với CTFd, cổng 8000
         v
-CTFd  +  plugin judge0
+CTFd  +  plugin ctfd_code
         |
         |  plugin gửi code sang Judge0, cổng 2358
         v
@@ -24,7 +24,7 @@ CTFd là website cuộc thi: tài khoản, đề, điểm, bảng xếp hạng.
 
 Judge0 là dịch vụ chạy code. Nó nhận source, chạy trong một hộp cô lập, trả stdout, stderr và trạng thái. Nó không biết challenge là gì, không biết ai đúng điểm.
 
-Plugin `judge0` nằm trong CTFd. Nó là cầu nối: nhận code từ trình duyệt, gửi cho Judge0, so output với đáp án, rồi bảo CTFd cộng điểm.
+Plugin `ctfd_code` nằm trong CTFd. Nó là cầu nối: nhận code từ trình duyệt, gửi cho Judge0, so output với đáp án, rồi bảo CTFd cộng điểm.
 
 Trình duyệt không được gọi Judge0. Nếu gọi thẳng, người chơi sẽ thấy đáp án test ẩn và có thể đốt tài nguyên Judge0 không qua kiểm soát.
 
@@ -184,19 +184,19 @@ Mode users hay teams chọn ở bước setup. Plugin chạy được cả hai. 
 
 ## Phần 4. Cài plugin
 
-Plugin là một thư mục cài vào đúng tên `judge0`:
+Plugin là một thư mục cài vào đúng tên `ctfd_code`:
 
 ```
-~/CTFd/CTFd/plugins/judge0/
+~/CTFd/CTFd/plugins/ctfd_code/
 ```
 
-CTFd tự load mọi thư mục con của `CTFd/plugins/` có hàm `load(app)`, và tên thư mục chính là tên package Python. Plugin này đăng ký URL, challenge type và migration bằng chữ `judge0`. Thư mục để tên `ctfd_codechallenger` thì không load, và không phục vụ `/plugins/judge0/...`.
+CTFd tự load mọi thư mục con của `CTFd/plugins/` có hàm `load(app)`, và tên thư mục chính là tên package Python. Plugin này đăng ký URL, challenge type và migration bằng chữ `ctfd_code`. Thư mục để tên `ctfd_codechallenger` thì không load, và không phục vụ `/plugins/ctfd_code/...`.
 
-Nếu gói tải về tên `ctfd_codechallenger`, copy thành `judge0`. Không để cả hai thư mục cùng lúc:
+Nếu gói tải về tên `ctfd_codechallenger`, copy thành `ctfd_code`. Không để cả hai thư mục cùng lúc:
 
 ```
-rm -rf ~/CTFd/CTFd/plugins/judge0
-cp -a /path/to/ctfd_codechallenger ~/CTFd/CTFd/plugins/judge0
+rm -rf ~/CTFd/CTFd/plugins/ctfd_code
+cp -a /path/to/ctfd_codechallenger ~/CTFd/CTFd/plugins/ctfd_code
 ```
 
 Phải thấy `__init__.py`, `challenge.py`, `routes.py`, `assets/`. Không sửa file core của CTFd. Không cần `docker compose build`: compose mount source vào `/opt/CTFd`.
@@ -206,26 +206,26 @@ Bật:
 ```
 cd ~/CTFd
 docker compose restart ctfd
-docker compose logs --since 2m ctfd | grep -i judge0
+docker compose logs --since 2m ctfd | grep -i ctfd_code
 ```
 
 Dòng phải có:
 
 ```
-Loaded module, <module 'CTFd.plugins.judge0' from '/opt/CTFd/CTFd/plugins/judge0/__init__.py'>
+Loaded module, <module 'CTFd.plugins.ctfd_code' from '/opt/CTFd/CTFd/plugins/ctfd_code/__init__.py'>
 ```
 
 Không có, hoặc có Traceback phía trên, thì plugin không vào danh sách challenge type. Đọc traceback đó, đừng tạo challenge vội.
 
-Lần đầu, plugin tạo hai bảng riêng: `judge0_challenge` và `judge0_test_case`. Kiểm tra:
+Lần đầu, plugin tạo hai bảng riêng: `ctfd_code_challenge` và `ctfd_code_test_case`. Kiểm tra:
 
 ```
-docker compose exec db mariadb -uctfd -pctfd ctfd -e "SHOW TABLES LIKE 'judge0%';"
+docker compose exec db mariadb -uctfd -pctfd ctfd -e "SHOW TABLES LIKE 'ctfd_code%';"
 ```
 
 Mật khẩu trong lệnh này lấy từ `docker-compose.yml` của CTFd (`MARIADB_PASSWORD`). Bộ trên máy này là `ctfd`.
 
-Vào Admin → Challenges → Create Challenge. Ô Challenge type phải có **Judge0 Code Challenge**.
+Vào Admin → Challenges → Create Challenge. Ô Challenge type phải có **Code Challenge**.
 
 ## Phần 5. Nối CTFd với Judge0
 
@@ -251,7 +251,7 @@ In `200` thì đường đi thông. `Connection refused` thì sai IP, Judge0 ch�
 Lưu URL này vào CTFd, đăng nhập admin, mở:
 
 ```
-http://192.168.75.136:8000/plugins/judge0/admin/settings
+http://192.168.75.136:8000/plugins/ctfd_code/admin/settings
 ```
 
 Cũng vào được bằng menu Admin → Judge0.
@@ -260,7 +260,7 @@ Cũng vào được bằng menu Admin → Judge0.
 
 Đúng: cạnh nút hiện **Saved.**, thanh địa chỉ không đổi, dòng Effective URL hiện đúng địa chỉ.
 
-Sai: trang nhảy sang `?judge0_url=...`. Đó là form gửi GET, URL không được ghi. Bấm Ctrl+F5 rồi Save lại.
+Sai: trang nhảy sang `?ctfd_code_url=...`. Đó là form gửi GET, URL không được ghi. Bấm Ctrl+F5 rồi Save lại.
 
 Cách thứ hai, nếu muốn URL có sẵn trước khi vào giao diện: thêm vào `environment` của service `ctfd` trong `docker-compose.yml`:
 
@@ -280,17 +280,17 @@ Thứ tự plugin chọn URL khi chấm một bài:
 
 ## Phần 6. Plugin làm việc bên trong CTFd
 
-Khi CTFd khởi động nó gọi `load()` của plugin. Hàm này đăng ký challenge type tên `judge0`, gắn các route riêng, và chạy migration nếu bảng chưa có.
+Khi CTFd khởi động nó gọi `load()` của plugin. Hàm này đăng ký challenge type tên `ctfd_code`, gắn các route riêng, và chạy migration nếu bảng chưa có.
 
-Admin tạo challenge type này thì CTFd vẫn ghi một dòng vào bảng `challenges` như mọi loại khác (tên, category, điểm, trạng thái). Plugin ghi thêm một dòng vào `judge0_challenge`: URL riêng, CPU, memory, ngôn ngữ được phép, starter code, kiểu so sánh. Test case nằm ở `judge0_test_case`.
+Admin tạo challenge type này thì CTFd vẫn ghi một dòng vào bảng `challenges` như mọi loại khác (tên, category, điểm, trạng thái). Plugin ghi thêm một dòng vào `ctfd_code_challenge`: URL riêng, CPU, memory, ngôn ngữ được phép, starter code, kiểu so sánh. Test case nằm ở `ctfd_code_test_case`.
 
 Người chơi mở challenge thì trình duyệt tải `view.js`. File này vẽ ô chọn ngôn ngữ, editor, nút Run, nút Submit. Editor là CodeMirror để trong `assets/vendor/codemirror/`. Không cần internet, không gọi CDN. Nếu file đó lỗi, còn một ô textarea, vẫn nộp được.
 
 Hai route người chơi dùng:
 
 ```
-POST /plugins/judge0/run/<id>       chỉ test sample, không ghi điểm
-POST /plugins/judge0/submit/<id>    mọi test, đúng hết thì giải challenge
+POST /plugins/ctfd_code/run/<id>       chỉ test sample, không ghi điểm
+POST /plugins/ctfd_code/submit/<id>    mọi test, đúng hết thì giải challenge
 ```
 
 Cả hai đều yêu cầu đăng nhập và CSRF token. `view.js` gửi qua cơ chế sẵn của CTFd, bạn không gắn tay.
@@ -319,7 +319,7 @@ Log của CTFd ghi `challenge_id`, `language_id`, số test và status. Không g
 
 Đăng nhập admin. Admin → Challenges → Create Challenge.
 
-Challenge type chọn **Judge0 Code Challenge**.
+Challenge type chọn **Code Challenge**.
 
 Điền:
 
@@ -463,8 +463,8 @@ Dòng có `result_status` là Judge0 đã trả lời. Dòng có `error=` là CT
 
 | Triệu chứng | Nguyên nhân | Việc làm |
 |---|---|---|
-| Không có type Judge0 Code Challenge | Plugin chưa load | `docker compose logs ctfd` tìm `judge0`. Restart sau khi sửa |
-| Save URL nhưng trang thành `?judge0_url=` | Form gửi GET | Ctrl+F5, Save lại, phải thấy chữ Saved |
+| Không có type Code Challenge | Plugin chưa load | `docker compose logs ctfd` tìm `ctfd_code`. Restart sau khi sửa |
+| Save URL nhưng trang thành `?ctfd_code_url=` | Form gửi GET | Ctrl+F5, Save lại, phải thấy chữ Saved |
 | Run báo chưa cấu hình URL | Cả ba chỗ đặt URL đều trống | Làm phần 5 |
 | Connection refused | URL là localhost, hoặc Judge0 chưa publish 2358 | Dùng IP host. `docker ps` phải có `0.0.0.0:2358->2358/tcp` |
 | Internal Error, log nói timed out | Không có worker, hoặc worker chết | `docker ps` phải có container workers. `docker compose up -d` trong thư mục Judge0 |
@@ -478,7 +478,7 @@ Dòng có `result_status` là Judge0 đã trả lời. Dòng có `error=` là CT
 1. Cài Docker.
 2. `docker compose up -d` trong `~/judge0-v1.13.1`. `curl` cổng 2358 ra JSON.
 3. `docker compose up -d` trong `~/CTFd`. Mở cổng 8000, tạo tài khoản admin.
-4. Để plugin ở `CTFd/plugins/judge0/`, restart CTFd, thấy dòng Loaded module.
+4. Để plugin ở `CTFd/plugins/ctfd_code/`, restart CTFd, thấy dòng Loaded module.
 5. Admin → Judge0, Save `http://<IP-host>:2358`.
-6. Tạo challenge type Judge0 Code Challenge, Update cấu hình, Save từng test case.
+6. Tạo challenge type Code Challenge, Update cấu hình, Save từng test case.
 7. User thường mở bài, Run, rồi Submit.

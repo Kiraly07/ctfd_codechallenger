@@ -19,7 +19,7 @@
             Optional override for this challenge. From inside the CTFd container, <code>localhost</code> is the container itself, not the host. Use the Judge0 service name on a shared Docker network, or the host IP.
         </small>
     </label>
-    <input type="url" class="form-control" name="judge0_url" value="{{ challenge.judge0_url or '' }}" placeholder="http://judge0-server:2358">
+    <input type="url" class="form-control" name="ctfd_code_url" value="{{ challenge.ctfd_code_url or '' }}" placeholder="http://judge0-server:2358">
 </div>
 
 <div class="form-group">

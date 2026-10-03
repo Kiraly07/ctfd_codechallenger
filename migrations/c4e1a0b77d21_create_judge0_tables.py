@@ -18,12 +18,16 @@ depends_on = None
 
 def upgrade(op=None):
     tables = set(get_all_tables(op))
+    # An older install still has judge0_*. The next revision renames those.
+    # Creating empty ctfd_code_* here would make that rename skip the data.
+    if "judge0_challenge" in tables:
+        return
 
-    if "judge0_challenge" not in tables:
+    if "ctfd_code_challenge" not in tables:
         op.create_table(
-            "judge0_challenge",
+            "ctfd_code_challenge",
             sa.Column("id", sa.Integer(), nullable=False),
-            sa.Column("judge0_url", sa.String(length=255), nullable=False, server_default=""),
+            sa.Column("ctfd_code_url", sa.String(length=255), nullable=False, server_default=""),
             sa.Column("cpu_time_limit", sa.Float(), nullable=False, server_default="2"),
             sa.Column("memory_limit", sa.Integer(), nullable=False, server_default="128000"),
             sa.Column("allowed_languages", sa.JSON(), nullable=True),
@@ -38,9 +42,9 @@ def upgrade(op=None):
             sa.PrimaryKeyConstraint("id"),
         )
 
-    if "judge0_test_case" not in tables:
+    if "ctfd_code_test_case" not in tables:
         op.create_table(
-            "judge0_test_case",
+            "ctfd_code_test_case",
             sa.Column("id", sa.Integer(), nullable=False),
             sa.Column("challenge_id", sa.Integer(), nullable=False),
             sa.Column("position", sa.Integer(), nullable=False, server_default="0"),
@@ -49,21 +53,21 @@ def upgrade(op=None):
             sa.Column("expected_output", sa.Text(), nullable=False),
             sa.Column("is_sample", sa.Boolean(), nullable=False, server_default=sa.false()),
             sa.ForeignKeyConstraint(
-                ["challenge_id"], ["judge0_challenge.id"], ondelete="CASCADE"
+                ["challenge_id"], ["ctfd_code_challenge.id"], ondelete="CASCADE"
             ),
             sa.PrimaryKeyConstraint("id"),
         )
         op.create_index(
-            "ix_judge0_test_case_challenge_id",
-            "judge0_test_case",
+            "ix_ctfd_code_test_case_challenge_id",
+            "ctfd_code_test_case",
             ["challenge_id"],
         )
 
 
 def downgrade(op=None):
     tables = set(get_all_tables(op))
-    if "judge0_test_case" in tables:
-        op.drop_index("ix_judge0_test_case_challenge_id", table_name="judge0_test_case")
-        op.drop_table("judge0_test_case")
-    if "judge0_challenge" in tables:
-        op.drop_table("judge0_challenge")
+    if "ctfd_code_test_case" in tables:
+        op.drop_index("ix_ctfd_code_test_case_challenge_id", table_name="ctfd_code_test_case")
+        op.drop_table("ctfd_code_test_case")
+    if "ctfd_code_challenge" in tables:
+        op.drop_table("ctfd_code_challenge")

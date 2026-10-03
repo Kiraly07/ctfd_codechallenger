@@ -22,7 +22,7 @@ import requests
 
 from .constants import JUDGE0_TIMEOUT_SECONDS
 
-log = logging.getLogger("ctfd.plugins.judge0")
+log = logging.getLogger("ctfd.plugins.ctfd_code")
 
 # Status ids from Judge0 CE /statuses.
 STATUS_IN_QUEUE = 1

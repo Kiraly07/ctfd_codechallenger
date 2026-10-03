@@ -17,8 +17,8 @@ from .constants import (
 
 
 class Judge0Challenge(Challenges):
-    __mapper_args__ = {"polymorphic_identity": "judge0"}
-    __tablename__ = "judge0_challenge"
+    __mapper_args__ = {"polymorphic_identity": "ctfd_code"}
+    __tablename__ = "ctfd_code_challenge"
 
     id = db.Column(
         db.Integer,
@@ -26,7 +26,7 @@ class Judge0Challenge(Challenges):
         primary_key=True,
     )
     # Empty string means "use the global plugin URL".
-    judge0_url = db.Column(db.String(255), nullable=False, default="")
+    ctfd_code_url = db.Column(db.String(255), nullable=False, default="")
     cpu_time_limit = db.Column(db.Float, nullable=False, default=DEFAULT_CPU_TIME)
     memory_limit = db.Column(db.Integer, nullable=False, default=DEFAULT_MEMORY_KB)
     # JSON list of language slugs, e.g. ["python3", "cpp"].
@@ -53,17 +53,17 @@ class Judge0Challenge(Challenges):
         kwargs.setdefault("comparison_mode", DEFAULT_COMPARISON)
         kwargs.setdefault("cpu_time_limit", DEFAULT_CPU_TIME)
         kwargs.setdefault("memory_limit", DEFAULT_MEMORY_KB)
-        kwargs.setdefault("judge0_url", "")
+        kwargs.setdefault("ctfd_code_url", "")
         super(Judge0Challenge, self).__init__(**kwargs)
 
 
 class Judge0TestCase(db.Model):
-    __tablename__ = "judge0_test_case"
+    __tablename__ = "ctfd_code_test_case"
 
     id = db.Column(db.Integer, primary_key=True)
     challenge_id = db.Column(
         db.Integer,
-        db.ForeignKey("judge0_challenge.id", ondelete="CASCADE"),
+        db.ForeignKey("ctfd_code_challenge.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )

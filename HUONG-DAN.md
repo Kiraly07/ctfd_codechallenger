@@ -1,6 +1,6 @@
-# Hướng dẫn plugin Judge0 cho CTFd
+# Hướng dẫn plugin Code cho CTFd
 
-Plugin thêm challenge type **Judge0 Code Challenge**. Người chơi viết code trên trình duyệt. CTFd gửi code sang Judge0, so output với test case, và ghi solve của CTFd khi mọi test đạt.
+Plugin thêm challenge type **Code Challenge**. Người chơi viết code trên trình duyệt. CTFd gửi code sang Judge0, so output với test case, và ghi solve của CTFd khi mọi test đạt.
 
 Trình duyệt không gọi Judge0. Code không chạy trong container CTFd.
 
@@ -19,14 +19,14 @@ Bản đã kiểm tra trên máy này:
 Plugin cài vào:
 
 ```
-~/CTFd/CTFd/plugins/judge0/
+~/CTFd/CTFd/plugins/ctfd_code/
 ```
 
-Gói tải về có thể tên `ctfd_codechallenger`. CTFd lấy tên thư mục làm tên package. URL, challenge type và migration của plugin này là `judge0`, nên thư mục cài phải đúng tên đó. Để nguyên tên `ctfd_codechallenger` thì plugin không load.
+Gói tải về có thể tên `ctfd_codechallenger`. CTFd lấy tên thư mục làm tên package. URL, challenge type và migration của plugin này là `ctfd_code`, nên thư mục cài phải đúng tên đó. Để nguyên tên `ctfd_codechallenger` thì plugin không load.
 
 ```
-rm -rf ~/CTFd/CTFd/plugins/judge0
-cp -a /path/to/ctfd_codechallenger ~/CTFd/CTFd/plugins/judge0
+rm -rf ~/CTFd/CTFd/plugins/ctfd_code
+cp -a /path/to/ctfd_codechallenger ~/CTFd/CTFd/plugins/ctfd_code
 ```
 
 Không để cả hai thư mục trong `CTFd/plugins/`. Container `ctfd` mount `~/CTFd` vào `/opt/CTFd` và chạy từ đó. Sửa file trên host là container thấy ngay. Không cần `docker compose build`.
@@ -38,15 +38,15 @@ Bật plugin bằng restart:
 
 Đợi vài giây rồi xem log. Phải có dòng load, không có traceback:
 
-    docker compose logs --since 2m ctfd | grep -i judge0
+    docker compose logs --since 2m ctfd | grep -i ctfd_code
 
 Dòng đúng:
 
-    Loaded module, <module 'CTFd.plugins.judge0' from '/opt/CTFd/CTFd/plugins/judge0/__init__.py'>
+    Loaded module, <module 'CTFd.plugins.ctfd_code' from '/opt/CTFd/CTFd/plugins/ctfd_code/__init__.py'>
 
-Lần đầu chạy, plugin tự tạo hai bảng `judge0_challenge` và `judge0_test_case`. Không sửa schema core của CTFd. Kiểm tra:
+Lần đầu chạy, plugin tự tạo hai bảng `ctfd_code_challenge` và `ctfd_code_test_case`. Không sửa schema core của CTFd. Kiểm tra:
 
-    docker compose exec db mariadb -uctfd -pctfd ctfd -e "SHOW TABLES LIKE 'judge0%';"
+    docker compose exec db mariadb -uctfd -pctfd ctfd -e "SHOW TABLES LIKE 'ctfd_code%';"
 
 Phải thấy cả hai bảng. Nếu thiếu, đọc log ngay sau dòng load. Migration lỗi sẽ in ở đó. Restart lại sau khi sửa. Migration chạy lại được, nó không tạo bảng lần hai.
 
@@ -70,7 +70,7 @@ Ba chỗ đặt URL, cái nào có giá trị thì dùng trước:
 
 Mở:
 
-    http://192.168.75.136:8000/plugins/judge0/admin/settings
+    http://192.168.75.136:8000/plugins/ctfd_code/admin/settings
 
 Hoặc menu Admin → Judge0.
 
@@ -78,7 +78,7 @@ Hoặc menu Admin → Judge0.
 
 Đúng thì chữ **Saved.** hiện cạnh nút, và thanh địa chỉ không đổi. Sai thì trình duyệt chuyển thành GET dạng:
 
-    /plugins/judge0/admin/settings?judge0_url=...
+    /plugins/ctfd_code/admin/settings?ctfd_code_url=...
 
 Đó là form HTML gửi đi, không phải API. Hard-refresh trang (Ctrl+F5) rồi Save lại. Nguyên nhân cũ là script gọi `CTFd.fetch`, object này không có trên trang admin.
 
@@ -118,7 +118,7 @@ Rồi:
 
 Admin → Challenges → nút tạo challenge.
 
-Challenge type: **Judge0 Code Challenge**.
+Challenge type: **Code Challenge**.
 
 - Name: Sum
 - Category: programming
@@ -203,7 +203,7 @@ Submit đúng thì Accepted 7/7. Sáu case ẩn không hiện input. Chúng gồ
 
 Run không ghi solve, không ghi fail, không cộng điểm. Chỉ chạy test sample.
 
-Submit chạy mọi test trên server. Đủ test thì ghi một dòng `solves` và một dòng `submissions` (`type=correct`), rồi xóa cache scoreboard. Sai, và chưa solve, thì ghi một dòng `submissions` với `type=incorrect`. Trên CTFd 3.8 cột `provided` nằm ở bảng `submissions`, không nằm ở `solves`. Giá trị là `judge0:python3` (đúng slug ngôn ngữ), không lưu source.
+Submit chạy mọi test trên server. Đủ test thì ghi một dòng `solves` và một dòng `submissions` (`type=correct`), rồi xóa cache scoreboard. Sai, và chưa solve, thì ghi một dòng `submissions` với `type=incorrect`. Trên CTFd 3.8 cột `provided` nằm ở bảng `submissions`, không nằm ở `solves`. Giá trị là `ctfd_code:python3` (đúng slug ngôn ngữ), không lưu source.
 
 So sánh mặc định là `trim`:
 
@@ -247,19 +247,19 @@ Tắt một ngôn ngữ trong form challenge rồi Update. Ô chọn ngôn ngữ
 
 ## 6. Sửa lỗi
 
-### Không thấy "Judge0 Code Challenge" trong danh sách type
+### Không thấy "Code Challenge" trong danh sách type
 
-Log không có dòng `Loaded module ... judge0`, hoặc có ImportError phía trên.
+Log không có dòng `Loaded module ... ctfd_code`, hoặc có ImportError phía trên.
 
-    docker compose logs --since 5m ctfd | grep -i judge0
+    docker compose logs --since 5m ctfd | grep -i ctfd_code
 
 `SAFE_MODE` đang bật thì CTFd không load plugin nào. Restart sau khi sửa file. Không cần build lại image trên bộ compose này.
 
-### Save URL nhưng trang nhảy thành `?judge0_url=`
+### Save URL nhưng trang nhảy thành `?ctfd_code_url=`
 
 Form đã gửi GET, request không tới API. Ctrl+F5. Sau refresh, Save phải hiện **Saved.** và URL không đổi. Kiểm tra DB:
 
-    docker compose exec db mariadb -uctfd -pctfd ctfd -e "SELECT \`key\`, value FROM config WHERE \`key\`='judge0_url';"
+    docker compose exec db mariadb -uctfd -pctfd ctfd -e "SELECT \`key\`, value FROM config WHERE \`key\`='ctfd_code_url';"
 
 ### Run hoặc Submit trả 400 "Judge0 URL is not configured"
 
@@ -317,9 +317,9 @@ CodeMirror nằm local tại `assets/vendor/codemirror/`, không gọi CDN. Text
 
 File Python được nạp lúc process khởi động. `docker compose restart ctfd`. File HTML, JS, CSS thì refresh trình duyệt, Ctrl+F5 nếu vẫn cũ.
 
-### Bảng judge0 không có, hoặc mở challenge thì 500
+### Bảng ctfd_code không có, hoặc mở challenge thì 500
 
-Migration chưa chạy hoặc chạy lỗi. Xem log lúc start. Không insert tay vào bảng `challenges`. Restart sau khi hết traceback. Khóa phiên bản nằm ở config `judge0_alembic_version`, giá trị `c4e1a0b77d21`.
+Migration chưa chạy hoặc chạy lỗi. Xem log lúc start. Không insert tay vào bảng `challenges`. Restart sau khi hết traceback. Khóa phiên bản nằm ở config `ctfd_code_alembic_version`. Bản mới là `b7c2e91a04d8` (đổi tên từ `judge0_*` nếu bảng cũ còn).
 
 ### `wait=true` hoặc "cannot be converted to UTF-8" trong log Judge0
 

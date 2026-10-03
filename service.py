@@ -41,7 +41,7 @@ from .constants import (
 )
 from .models import Judge0Challenge, Judge0TestCase
 
-log = logging.getLogger("ctfd.plugins.judge0")
+log = logging.getLogger("ctfd.plugins.ctfd_code")
 
 
 class ValidationError(Exception):
@@ -50,10 +50,10 @@ class ValidationError(Exception):
         self.message = message
 
 
-def resolve_judge0_url(challenge: Judge0Challenge | None = None) -> str:
+def resolve_ctfd_code_url(challenge: Judge0Challenge | None = None) -> str:
     """Per-challenge URL, then CTFd config, then JUDGE0_URL. Never a hardcoded IP."""
-    if challenge is not None and (challenge.judge0_url or "").strip():
-        return challenge.judge0_url.strip()
+    if challenge is not None and (challenge.ctfd_code_url or "").strip():
+        return challenge.ctfd_code_url.strip()
     configured = get_config(CONFIG_URL_KEY)
     if configured:
         return str(configured).strip()
@@ -112,12 +112,12 @@ def parse_source(data: dict) -> tuple[str, str]:
 def check_rate_limit(account_id: int, challenge_id: int, kind: str) -> bool:
     """Return True when the caller is still inside the per-minute budget."""
     limit = RUN_PER_MINUTE if kind == "run" else SUBMIT_PER_MINUTE
-    key = "judge0_{0}_{1}_{2}".format(kind, account_id, challenge_id)
+    key = "ctfd_code_{0}_{1}_{2}".format(kind, account_id, challenge_id)
     try:
         count = int(cache.inc(key))
     except Exception:
         # Cache failures must not turn into an open gate or a crash.
-        log.warning("[JUDGE0] rate-limit cache unavailable")
+        log.warning("[CTFD_CODE] rate-limit cache unavailable")
         return True
     if count == 1:
         cache.expire(key, 60)
@@ -167,14 +167,14 @@ def run_samples(challenge: Judge0Challenge, source: str, language_slug: str) -> 
     if not samples:
         raise ValidationError("This challenge has no sample test cases to run")
 
-    url = resolve_judge0_url(challenge)
+    url = resolve_ctfd_code_url(challenge)
     if not url:
         raise ValidationError("Judge0 URL is not configured")
     token = resolve_api_token()
     cpu, memory = clamp_limits(challenge.cpu_time_limit, challenge.memory_limit)
 
     log.info(
-        "[JUDGE0] submitting challenge_id=%s language_id=%s cases=%s kind=run",
+        "[CTFD_CODE] submitting challenge_id=%s language_id=%s cases=%s kind=run",
         challenge.id,
         language_id,
         len(samples),
@@ -185,10 +185,10 @@ def run_samples(challenge: Judge0Challenge, source: str, language_slug: str) -> 
         try:
             fields = _run_one(url, token, language_id, source, case, cpu, memory)
         except Judge0Error as exc:
-            log.warning("[JUDGE0] challenge_id=%s error=%s", challenge.id, exc)
+            log.warning("[CTFD_CODE] challenge_id=%s error=%s", challenge.id, exc)
             raise
         log.info(
-            "[JUDGE0] challenge_id=%s language_id=%s result_status=%s",
+            "[CTFD_CODE] challenge_id=%s language_id=%s result_status=%s",
             challenge.id,
             language_id,
             fields["status"],
@@ -227,14 +227,14 @@ def grade_all(challenge: Judge0Challenge, source: str, language_slug: str) -> di
     if not cases:
         raise ValidationError("This challenge has no test cases")
 
-    url = resolve_judge0_url(challenge)
+    url = resolve_ctfd_code_url(challenge)
     if not url:
         raise ValidationError("Judge0 URL is not configured")
     token = resolve_api_token()
     cpu, memory = clamp_limits(challenge.cpu_time_limit, challenge.memory_limit)
 
     log.info(
-        "[JUDGE0] submitting challenge_id=%s language_id=%s cases=%s kind=submit",
+        "[CTFD_CODE] submitting challenge_id=%s language_id=%s cases=%s kind=submit",
         challenge.id,
         language_id,
         len(cases),
@@ -247,10 +247,10 @@ def grade_all(challenge: Judge0Challenge, source: str, language_slug: str) -> di
         try:
             fields = _run_one(url, token, language_id, source, case, cpu, memory)
         except Judge0Error as exc:
-            log.warning("[JUDGE0] challenge_id=%s error=%s", challenge.id, exc)
+            log.warning("[CTFD_CODE] challenge_id=%s error=%s", challenge.id, exc)
             raise
         log.info(
-            "[JUDGE0] challenge_id=%s language_id=%s result_status=%s",
+            "[CTFD_CODE] challenge_id=%s language_id=%s result_status=%s",
             challenge.id,
             language_id,
             fields["status"],

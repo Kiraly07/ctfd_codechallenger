@@ -1,4 +1,4 @@
-# Judge0 Code Challenge for CTFd
+# Code Challenge for CTFd
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CTFd](https://img.shields.io/badge/CTFd-3.8.x-blue.svg)](https://github.com/CTFd/CTFd)
@@ -6,7 +6,7 @@
 
 > **English**: Custom challenge type for CTFd. Players write code in the browser. CTFd sends code to Judge0, compares output with test cases, and records a solve when every test passes.
 >
-> **Tiếng Việt**: Plugin thêm challenge type **Judge0 Code Challenge** cho CTFd. Người chơi viết code trên trình duyệt. CTFd gửi code sang Judge0, so output với test case, và ghi solve khi mọi test đạt.
+> **Tiếng Việt**: Plugin thêm challenge type **Code Challenge** cho CTFd. Người chơi viết code trên trình duyệt. CTFd gửi code sang Judge0, so output với test case, và ghi solve khi mọi test đạt.
 
 ---
 
@@ -28,7 +28,7 @@
   - [1. Install Judge0 / Cài Judge0](#1-install-judge0--cài-judge0)
   - [2. Install CTFd / Cài CTFd](#2-install-ctfd--cài-ctfd)
   - [3. Install Plugin / Cài plugin](#3-install-plugin--cài-plugin)
-  - [4. Configure Judge0 URL / Cấu hình URL Judge0](#4-configure-judge0-url--cấu-hình-url-judge0)
+  - [4. Configure Judge0 URL / Cấu hình URL Judge0](#4-configure-ctfd-code-url--cấu-hình-url-judge0)
 - [Quick Start / Hướng dẫn nhanh](#quick-start--hướng-dẫn-nhanh)
 - [Configuration / Cấu hình chi tiết](#configuration--cấu-hình-chi-tiết)
 - [API Reference / Tài liệu API](#api-reference--tài-liệu-api)
@@ -106,11 +106,11 @@ Open `http://<host-ip>:8000` and complete setup (admin account, CTF name, mode).
 
 > **Chi tiết**: Xem [HUONG-DAN.md Mục 1](HUONG-DAN.md#1-cài-plugin) và [CAI-DAT.md Phần 4](CAI-DAT.md#phần-4-cài-plugin) — Hướng dẫn cài plugin chi tiết tiếng Việt
 
-The download may be named `ctfd_codechallenger`. CTFd imports whatever the directory is called, and this plugin's URLs, migration key, and challenge type are `judge0`. The installed directory must be named `judge0`. A copy left as `ctfd_codechallenger` does not load and does not serve `/plugins/judge0/...`.
+The download may be named `ctfd_codechallenger`. CTFd imports whatever the directory is called, and this plugin's URLs, migration key, and challenge type are `ctfd_code`. The installed directory must be named `ctfd_code`. A copy left as `ctfd_codechallenger` does not load and does not serve `/plugins/ctfd_code/...`.
 
 ```bash
-rm -rf ~/CTFd/CTFd/plugins/judge0
-cp -a /path/to/ctfd_codechallenger ~/CTFd/CTFd/plugins/judge0
+rm -rf ~/CTFd/CTFd/plugins/ctfd_code
+cp -a /path/to/ctfd_codechallenger ~/CTFd/CTFd/plugins/ctfd_code
 ```
 
 Do not leave both directories in `CTFd/plugins/`. Restart CTFd (no image rebuild; the repo is bind-mounted) and verify:
@@ -118,22 +118,22 @@ Do not leave both directories in `CTFd/plugins/`. Restart CTFd (no image rebuild
 ```bash
 cd ~/CTFd
 docker compose restart ctfd
-docker compose logs --since 2m ctfd | grep -i judge0
+docker compose logs --since 2m ctfd | grep -i ctfd_code
 ```
 
 Expected log line:
 
 ```
-Loaded module, <module 'CTFd.plugins.judge0' from '/opt/CTFd/CTFd/plugins/judge0/__init__.py'>
+Loaded module, <module 'CTFd.plugins.ctfd_code' from '/opt/CTFd/CTFd/plugins/ctfd_code/__init__.py'>
 ```
 
 Verify tables created / Kiểm tra bảng đã tạo:
 
 ```bash
-docker compose exec db mariadb -uctfd -pctfd ctfd -e "SHOW TABLES LIKE 'judge0%';"
+docker compose exec db mariadb -uctfd -pctfd ctfd -e "SHOW TABLES LIKE 'ctfd_code%';"
 ```
 
-Expected: `judge0_challenge` and `judge0_test_case`.
+Expected: `ctfd_code_challenge` and `ctfd_code_test_case`.
 
 ### 4. Configure Judge0 URL / Cấu hình URL Judge0
 
@@ -147,7 +147,7 @@ Expected: `judge0_challenge` and `judge0_test_case`.
 
 **Via Admin UI**:
 
-1. Open `http://<host-ip>:8000/plugins/judge0/admin/settings`
+1. Open `http://<host-ip>:8000/plugins/ctfd_code/admin/settings`
 2. Enter `http://<host-ip>:2358`
 3. Leave token empty (Judge0 local, no auth)
 4. Click **Save**
@@ -187,7 +187,7 @@ Expected: `200`.
 > **Chi tiết**: Xem [HUONG-DAN.md Mục 3](HUONG-DAN.md#3-tạo-một-bài) và [CAI-DAT.md Phần 7](CAI-DAT.md#phần-7-tạo-một-bài) — Hướng dẫn tạo bài chi tiết tiếng Việt
 
 1. **Admin Panel → Challenges → Create Challenge**
-2. Challenge type: **Judge0 Code Challenge**
+2. Challenge type: **Code Challenge**
 3. Fill: Name, Category, Message, Value
 4. Click **Create** (no flag needed)
 5. Open the challenge, set on right-hand form:
@@ -282,7 +282,7 @@ Judge0's "Accepted" only means exit code 0. Wrong Answer is decided by CTFd plug
 
 All POST bodies are JSON. CTFd's `CSRF-Token` header is required.
 
-### POST /plugins/judge0/run/<challenge_id>
+### POST /plugins/ctfd_code/run/<challenge_id>
 
 ```json
 {
@@ -308,7 +308,7 @@ Response:
 }
 ```
 
-### POST /plugins/judge0/submit/<challenge_id>
+### POST /plugins/ctfd_code/submit/<challenge_id>
 
 ```json
 {
@@ -344,8 +344,8 @@ Hidden cases have no `stdin`, `expected_output`, `stdout`, or `stderr`.
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| No "Judge0 Code Challenge" type | Plugin not loaded | `docker compose logs ctfd \| grep -i judge0`. Restart after fix |
-| Save URL but page becomes `?judge0_url=` | Form sent GET | Ctrl+F5, Save again, must see **Saved.** |
+| No "Code Challenge" type | Plugin not loaded | `docker compose logs ctfd \| grep -i ctfd_code`. Restart after fix |
+| Save URL but page becomes `?ctfd_code_url=` | Form sent GET | Ctrl+F5, Save again, must see **Saved.** |
 | Run/Submit 400 "Judge0 URL is not configured" | All three URL sources empty | Configure URL (see Installation → step 4) |
 | Connection refused | URL is `localhost` or `127.0.0.1` | Use host IP. `docker ps` must show `0.0.0.0:2358->2358/tcp` |
 | Timeout, Internal Error | Judge0 worker not running | `docker ps` must show `workers` container Up |

@@ -122,7 +122,7 @@
 
       save.addEventListener("click", function () {
         save.disabled = true;
-        api("/plugins/judge0/admin/tests/" + item.id, {
+        api("/plugins/ctfd_code/admin/tests/" + item.id, {
           method: "PATCH",
           body: {
             name: name.input.value,
@@ -142,7 +142,7 @@
         if (!window.confirm("Delete this test case?")) {
           return;
         }
-        api("/plugins/judge0/admin/tests/" + item.id, { method: "DELETE" })
+        api("/plugins/ctfd_code/admin/tests/" + item.id, { method: "DELETE" })
           .then(load)
           .catch(function (err) {
             window.alert(err.message);
@@ -152,13 +152,13 @@
   }
 
   function load() {
-    return api("/plugins/judge0/admin/" + challengeId + "/tests").then(function (body) {
+    return api("/plugins/ctfd_code/admin/" + challengeId + "/tests").then(function (body) {
       render(body.data || []);
     });
   }
 
   document.getElementById("judge0-add-test").addEventListener("click", function () {
-    api("/plugins/judge0/admin/" + challengeId + "/tests", {
+    api("/plugins/ctfd_code/admin/" + challengeId + "/tests", {
       method: "POST",
       body: { name: "", stdin: "", expected_output: "", is_sample: false },
     })
@@ -178,7 +178,7 @@
       "submit",
       function () {
         var payload = {};
-        payload.judge0_url = (form.querySelector("[name=judge0_url]") || {}).value || "";
+        payload.ctfd_code_url = (form.querySelector("[name=ctfd_code_url]") || {}).value || "";
         payload.cpu_time_limit = (form.querySelector("[name=cpu_time_limit]") || {}).value;
         payload.memory_limit = (form.querySelector("[name=memory_limit]") || {}).value;
         payload.comparison_mode = (form.querySelector("[name=comparison_mode]") || {}).value || "trim";
@@ -200,7 +200,7 @@
         form.querySelectorAll("[name=allowed_languages]").forEach(function (box) {
           box.disabled = true;
         });
-        ["judge0_url", "cpu_time_limit", "memory_limit", "comparison_mode"].forEach(function (name) {
+        ["ctfd_code_url", "cpu_time_limit", "memory_limit", "comparison_mode"].forEach(function (name) {
           var el = form.querySelector("[name='" + name + "']");
           if (el) {
             el.disabled = true;
@@ -229,7 +229,7 @@
         options = Object.assign({}, options, { body: JSON.stringify(payload) });
         form.removeAttribute("data-judge0-payload");
         form.querySelectorAll(":disabled").forEach(function (el) {
-          if (el.name && (el.name.indexOf("starter_code_") === 0 || el.name === "allowed_languages" || el.name === "judge0_url" || el.name === "cpu_time_limit" || el.name === "memory_limit" || el.name === "comparison_mode")) {
+          if (el.name && (el.name.indexOf("starter_code_") === 0 || el.name === "allowed_languages" || el.name === "ctfd_code_url" || el.name === "cpu_time_limit" || el.name === "memory_limit" || el.name === "comparison_mode")) {
             el.disabled = false;
           }
         });

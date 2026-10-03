@@ -43,8 +43,8 @@ SUBMIT_PER_MINUTE = 6
 
 JUDGE0_TIMEOUT_SECONDS = 30
 
-CONFIG_URL_KEY = "judge0_url"
-CONFIG_TOKEN_KEY = "judge0_api_token"
+CONFIG_URL_KEY = "ctfd_code_url"
+CONFIG_TOKEN_KEY = "ctfd_code_api_token"
 
 ENV_URL = "JUDGE0_URL"
 ENV_TOKEN = "JUDGE0_API_TOKEN"

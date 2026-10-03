@@ -16,8 +16,8 @@
             <form id="judge0-settings">
                 <div class="form-group">
                     <label>Judge0 URL</label>
-                    <input class="form-control" name="judge0_url" id="judge0-url" placeholder="http://192.168.75.136:2358">
-                    <small class="form-text text-muted">Effective URL right now: <code id="judge0-effective"></code></small>
+                    <input class="form-control" name="ctfd_code_url" id="ctfd-code-url" placeholder="http://192.168.75.136:2358">
+                    <small class="form-text text-muted">Effective URL right now: <code id="ctfd-code-effective"></code></small>
                 </div>
                 <div class="form-group">
                     <label>API token (optional)</label>
@@ -58,32 +58,32 @@
         return fetch(url, options);
     }
 
-    api("/plugins/judge0/admin/settings.json", { method: "GET" })
+    api("/plugins/ctfd_code/admin/settings.json", { method: "GET" })
         .then(function (r) { return r.json(); })
         .then(function (body) {
             var data = body.data || {};
-            document.getElementById("judge0-url").value = data.judge0_url || "";
-            document.getElementById("judge0-effective").textContent = data.effective_url || "(not set)";
+            document.getElementById("ctfd-code-url").value = data.ctfd_code_url || "";
+            document.getElementById("ctfd-code-effective").textContent = data.effective_url || "(not set)";
             document.getElementById("judge0-token-state").textContent = data.token_set ? "A token is stored." : "No token stored.";
         });
 
     document.getElementById("judge0-settings").addEventListener("submit", function (event) {
         event.preventDefault();
         var payload = {
-            judge0_url: document.getElementById("judge0-url").value.trim(),
+            ctfd_code_url: document.getElementById("ctfd-code-url").value.trim(),
             clear_token: document.getElementById("judge0-clear-token").checked
         };
         var token = document.getElementById("judge0-token").value;
         if (token) {
             payload.api_token = token;
         }
-        api("/plugins/judge0/admin/settings", {
+        api("/plugins/ctfd_code/admin/settings", {
             method: "POST",
             body: JSON.stringify(payload)
         }).then(function (r) { return r.json(); }).then(function (body) {
             status.textContent = body.success ? "Saved." : (body.message || "Could not save.");
             if (body.success) {
-                document.getElementById("judge0-effective").textContent = payload.judge0_url || "(not set)";
+                document.getElementById("ctfd-code-effective").textContent = payload.ctfd_code_url || "(not set)";
             }
             document.getElementById("judge0-token").value = "";
         }).catch(function () {

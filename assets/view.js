@@ -4,7 +4,7 @@
  * then calls preRender / postRender. postRender is where the editor is built,
  * because that is the first moment #judge0-code exists.
  *
- * CodeMirror is loaded from /plugins/judge0/assets (bundled, no CDN). If it
+ * CodeMirror is loaded from /plugins/ctfd_code/assets (bundled, no CDN). If it
  * fails, the textarea stays and is used as-is.
  */
 (function () {
@@ -232,7 +232,7 @@
     }
 
     function loadEditor() {
-      var base = root + "/plugins/judge0/assets/vendor/codemirror/";
+      var base = root + "/plugins/ctfd_code/assets/vendor/codemirror/";
       return loadScript(base + "codemirror.min.js")
         .then(function () {
           return Promise.all([
@@ -268,7 +268,7 @@
         });
     }
 
-    CTFd.fetch("/plugins/judge0/" + challengeId + "/config", { method: "GET" })
+    CTFd.fetch("/plugins/ctfd_code/" + challengeId + "/config", { method: "GET" })
       .then(function (response) {
         return response.json();
       })
@@ -295,10 +295,10 @@
 
     languageSelect.addEventListener("change", applyLanguage);
     runButton.addEventListener("click", function () {
-      post("/plugins/judge0/run/" + challengeId);
+      post("/plugins/ctfd_code/run/" + challengeId);
     });
     submitButton.addEventListener("click", function () {
-      post("/plugins/judge0/submit/" + challengeId);
+      post("/plugins/ctfd_code/submit/" + challengeId);
     });
     textarea.addEventListener("keydown", function (event) {
       if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
