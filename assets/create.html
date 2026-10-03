@@ -1,0 +1,11 @@
+{% extends "admin/challenges/create.html" %}
+
+{% block header %}
+<div class="alert alert-secondary" role="alert">
+    Judge0 Code Challenge. Players write code in the browser. CTFd sends it to your Judge0 server and compares the output with the test cases you add after the challenge is created.
+</div>
+{% endblock %}
+
+{% block type %}
+<input type="hidden" value="judge0" name="type" id="chaltype">
+{% endblock %}

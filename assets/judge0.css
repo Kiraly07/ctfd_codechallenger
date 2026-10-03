@@ -1,0 +1,102 @@
+.judge0-editor-wrap {
+  border: 1px solid var(--bs-border-color, #ced4da);
+  border-radius: 0.25rem;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.judge0-editor-wrap .CodeMirror {
+  height: 320px;
+  font-size: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.judge0-fallback {
+  width: 100%;
+  min-height: 320px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  border: 0;
+  resize: vertical;
+  padding: 8px;
+}
+
+.judge0-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.judge0-toolbar label {
+  margin: 0;
+  font-weight: 600;
+}
+
+.judge0-toolbar select {
+  max-width: 220px;
+}
+
+.judge0-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.judge0-console {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  min-height: 80px;
+  max-height: 280px;
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.judge0-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  margin-right: 0.4rem;
+}
+
+.judge0-badge-accepted { background: #198754; color: #fff; }
+.judge0-badge-wrong { background: #dc3545; color: #fff; }
+.judge0-badge-runtime { background: #fd7e14; color: #fff; }
+.judge0-badge-limit { background: #6f42c1; color: #fff; }
+.judge0-badge-compile { background: #dc3545; color: #fff; }
+.judge0-badge-internal { background: #6c757d; color: #fff; }
+
+.judge0-case {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.judge0-case-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.judge0-samples {
+  margin: 0.75rem 0;
+}
+
+.judge0-sample {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.judge0-sample pre {
+  margin: 0.25rem 0 0;
+  white-space: pre-wrap;
+}

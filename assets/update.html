@@ -1,0 +1,106 @@
+{% extends "admin/challenges/update.html" %}
+
+{% block header %}
+<div class="alert alert-secondary" role="alert">
+    Code is graded by Judge0. Hidden tests never leave the server. Leave the Judge0 URL empty to use the global value from the Judge0 admin page (or the JUDGE0_URL environment variable).
+</div>
+{% endblock %}
+
+{% block function %}{% endblock %}
+{% block initial %}{% endblock %}
+{% block decay %}{% endblock %}
+{% block minimum %}{% endblock %}
+
+{% block logic %}
+<div class="form-group">
+    <label>
+        Judge0 URL<br>
+        <small class="form-text text-muted">
+            Optional override for this challenge. From inside the CTFd container, <code>localhost</code> is the container itself, not the host. Use the Judge0 service name on a shared Docker network, or the host IP.
+        </small>
+    </label>
+    <input type="url" class="form-control" name="judge0_url" value="{{ challenge.judge0_url or '' }}" placeholder="http://judge0-server:2358">
+</div>
+
+<div class="form-group">
+    <label>
+        CPU time limit (seconds)<br>
+        <small class="form-text text-muted">Clamped between 0.1 and 15.</small>
+    </label>
+    <input type="number" class="form-control" name="cpu_time_limit" min="0.1" max="15" step="0.1" value="{{ challenge.cpu_time_limit }}">
+</div>
+
+<div class="form-group">
+    <label>
+        Memory limit (KB)<br>
+        <small class="form-text text-muted">Judge0 expects kilobytes. 128000 is 128 MB. Clamped between 2048 and 512000.</small>
+    </label>
+    <input type="number" class="form-control" name="memory_limit" min="2048" max="512000" step="1" value="{{ challenge.memory_limit }}">
+</div>
+
+<div class="form-group">
+    <label>
+        Output comparison<br>
+        <small class="form-text text-muted">
+            trim: drop trailing whitespace and one final newline (default).
+            exact: raw text after newline normalization.
+            whitespace-insensitive: collapse all whitespace.
+        </small>
+    </label>
+    <select class="form-control custom-select" name="comparison_mode">
+        <option value="trim" {% if challenge.comparison_mode == "trim" %}selected{% endif %}>trim</option>
+        <option value="exact" {% if challenge.comparison_mode == "exact" %}selected{% endif %}>exact</option>
+        <option value="whitespace-insensitive" {% if challenge.comparison_mode == "whitespace-insensitive" %}selected{% endif %}>whitespace-insensitive</option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label>Allowed languages</label>
+    <div id="judge0-languages">
+        {% set selected = challenge.allowed_languages or [] %}
+        {% for slug, label in [
+            ("python3", "Python 3"),
+            ("c", "C"),
+            ("cpp", "C++"),
+            ("java", "Java"),
+            ("javascript", "JavaScript"),
+            ("go", "Go"),
+            ("rust", "Rust")
+        ] %}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="allowed_languages" value="{{ slug }}" id="lang-{{ slug }}" {% if slug in selected %}checked{% endif %}>
+            <label class="form-check-label" for="lang-{{ slug }}">{{ label }}</label>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="form-group">
+    <label>
+        Starter code<br>
+        <small class="form-text text-muted">Optional. One box per enabled language. Saved with the challenge update.</small>
+    </label>
+    {% set starters = challenge.starter_code or {} %}
+    {% for slug, label in [
+        ("python3", "Python 3"),
+        ("c", "C"),
+        ("cpp", "C++"),
+        ("java", "Java"),
+        ("javascript", "JavaScript"),
+        ("go", "Go"),
+        ("rust", "Rust")
+    ] %}
+    <label class="mt-2" for="starter-{{ slug }}">{{ label }}</label>
+    <textarea class="form-control" id="starter-{{ slug }}" name="starter_code_{{ slug }}" rows="4">{{ starters.get(slug, "") }}</textarea>
+    {% endfor %}
+</div>
+
+<div class="form-group">
+    <label>Test cases</label>
+    <small class="form-text text-muted d-block mb-2">
+        Sample cases are shown to the player and used by Run Code. Hidden cases run only on Submit and their input and expected output are not returned to the browser.
+    </small>
+    <div id="judge0-tests" data-challenge-id="{{ challenge.id }}"></div>
+    <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="judge0-add-test">Add test case</button>
+</div>
+{% endblock %}

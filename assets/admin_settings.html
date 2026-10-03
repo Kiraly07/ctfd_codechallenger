@@ -1,0 +1,95 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+    <div class="container">
+        <h1>Judge0</h1>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <p>
+                Global Judge0 API URL. A challenge can override this. The CTFd container calls this URL; the browser never does.
+                <code>http://localhost:2358</code> points at the CTFd container, not the host.
+            </p>
+            <form id="judge0-settings">
+                <div class="form-group">
+                    <label>Judge0 URL</label>
+                    <input class="form-control" name="judge0_url" id="judge0-url" placeholder="http://192.168.75.136:2358">
+                    <small class="form-text text-muted">Effective URL right now: <code id="judge0-effective"></code></small>
+                </div>
+                <div class="form-group">
+                    <label>API token (optional)</label>
+                    <input class="form-control" name="api_token" id="judge0-token" type="password" autocomplete="new-password" placeholder="Leave blank to keep the current token">
+                    <small class="form-text text-muted" id="judge0-token-state"></small>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="judge0-clear-token">
+                        <label class="form-check-label" for="judge0-clear-token">Clear the stored token</label>
+                    </div>
+                </div>
+                <button class="btn btn-primary" type="submit">Save</button>
+                <span id="judge0-settings-status" class="ml-2"></span>
+            </form>
+            <p class="mt-4 text-muted">
+                Language ids are fixed to the Judge0 CE 1.13.1 defaults: Python 3 = 71, C = 50, C++ = 54, Java = 62, JavaScript = 63, Go = 60, Rust = 73. Players cannot send a language id.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    // The admin bundle never publishes CTFd on window, and this block runs
+    // before that module anyway. init.csrfNonce is set in the page head.
+    var status = document.getElementById("judge0-settings-status");
+    var nonce = (window.init && init.csrfNonce) || "";
+
+    function api(url, options) {
+        options = options || {};
+        options.credentials = "same-origin";
+        options.headers = Object.assign({
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "CSRF-Token": nonce
+        }, options.headers || {});
+        return fetch(url, options);
+    }
+
+    api("/plugins/judge0/admin/settings.json", { method: "GET" })
+        .then(function (r) { return r.json(); })
+        .then(function (body) {
+            var data = body.data || {};
+            document.getElementById("judge0-url").value = data.judge0_url || "";
+            document.getElementById("judge0-effective").textContent = data.effective_url || "(not set)";
+            document.getElementById("judge0-token-state").textContent = data.token_set ? "A token is stored." : "No token stored.";
+        });
+
+    document.getElementById("judge0-settings").addEventListener("submit", function (event) {
+        event.preventDefault();
+        var payload = {
+            judge0_url: document.getElementById("judge0-url").value.trim(),
+            clear_token: document.getElementById("judge0-clear-token").checked
+        };
+        var token = document.getElementById("judge0-token").value;
+        if (token) {
+            payload.api_token = token;
+        }
+        api("/plugins/judge0/admin/settings", {
+            method: "POST",
+            body: JSON.stringify(payload)
+        }).then(function (r) { return r.json(); }).then(function (body) {
+            status.textContent = body.success ? "Saved." : (body.message || "Could not save.");
+            if (body.success) {
+                document.getElementById("judge0-effective").textContent = payload.judge0_url || "(not set)";
+            }
+            document.getElementById("judge0-token").value = "";
+        }).catch(function () {
+            status.textContent = "Could not save.";
+        });
+    });
+})();
+</script>
+{% endblock %}

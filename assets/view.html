@@ -1,0 +1,37 @@
+{% extends "challenge.html" %}
+
+{% block input %}
+<input id="challenge-id" class="challenge-id" type="hidden" value="{{ challenge.id }}">
+<link rel="stylesheet" href="{{ request.script_root }}/plugins/judge0/assets/vendor/codemirror/codemirror.min.css">
+<link rel="stylesheet" href="{{ request.script_root }}/plugins/judge0/assets/judge0.css">
+
+<div id="judge0-root" data-challenge-id="{{ challenge.id }}">
+    <div class="judge0-toolbar">
+        <label for="judge0-language">Language</label>
+        <select id="judge0-language" class="form-select form-control"></select>
+    </div>
+
+    <div class="judge0-editor-wrap">
+        <textarea id="judge0-code" class="judge0-fallback" spellcheck="false" placeholder="Write your solution here"></textarea>
+    </div>
+
+    <div class="judge0-actions">
+        <button type="button" id="judge0-run" class="btn btn-outline-primary">Run Code</button>
+        <button type="button" id="judge0-submit" class="btn btn-outline-secondary">Submit</button>
+    </div>
+
+    <div id="judge0-status" class="mb-2"></div>
+
+    <div class="judge0-samples" id="judge0-samples" hidden>
+        <strong>Samples</strong>
+        <div id="judge0-samples-body"></div>
+    </div>
+
+    <div>
+        <strong>Output</strong>
+        <div id="judge0-console" class="judge0-console">Ready.</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block submit %}{% endblock %}
